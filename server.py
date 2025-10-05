@@ -17,17 +17,17 @@ def home():
 
 @app.route("/data", methods=["POST"])
 def receive_data():
-    """Receive GPS coordinates via POST and save them."""
-    # Use form data instead of raw request.data
+    """Receive GPS coordinates and a message via POST and save them."""
     latitude = request.form.get("Latitude")
     longitude = request.form.get("Longitude")
+    message = request.form.get("Message", "")  # Optional field
 
     if not latitude or not longitude:
         return "Missing Latitude or Longitude", 400
 
-    # Add timestamp for easier tracking
+    # Add timestamp for tracking
     timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
-    data = f"{timestamp} → Latitude={latitude}, Longitude={longitude}"
+    data = f"{timestamp} → Latitude={latitude}, Longitude={longitude}, Message={message}"
 
     # Save to file
     with open(DATA_FILE, "w") as f:
@@ -41,5 +41,5 @@ def receive_data():
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 8080))
-    # Run on all interfaces for Render
     app.run(host="0.0.0.0", port=port)
+
