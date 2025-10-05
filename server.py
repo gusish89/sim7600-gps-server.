@@ -2,18 +2,23 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-# Store the latest GPS data
-latest_data = "No data yet"
+DATA_FILE = "latest_gps.txt"
 
 @app.route("/", methods=["GET"])
 def home():
+    try:
+        with open(DATA_FILE, "r") as f:
+            latest_data = f.read()
+    except FileNotFoundError:
+        latest_data = "No data yet"
     return f"Latest GPS data: {latest_data}", 200
 
 @app.route("/data", methods=["POST"])
 def receive_data():
-    global latest_data
-    latest_data = request.data.decode("utf-8")  # Update latest GPS data
-    print("Received data:", latest_data)        # Still prints to logs
+    data = request.data.decode("utf-8")
+    with open(DATA_FILE, "w") as f:
+        f.write(data)
+    print("Received data:", data)  # This still goes to the logs
     return "Data received", 200
 
 if __name__ == "__main__":
