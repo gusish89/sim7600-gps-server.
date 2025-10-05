@@ -1,4 +1,5 @@
 from flask import Flask, request
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -6,22 +7,39 @@ DATA_FILE = "latest_gps.txt"
 
 @app.route("/", methods=["GET"])
 def home():
+    """Display the latest GPS data."""
     try:
         with open(DATA_FILE, "r") as f:
             latest_data = f.read()
     except FileNotFoundError:
         latest_data = "No data yet"
-    return f"Latest GPS data: {latest_data}", 200
+    return f"Latest GPS data:<br>{latest_data}", 200
 
 @app.route("/data", methods=["POST"])
 def receive_data():
-    data = request.data.decode("utf-8")
+    """Receive GPS coordinates via POST and save them."""
+    # Use form data instead of raw request.data
+    latitude = request.form.get("Latitude")
+    longitude = request.form.get("Longitude")
+
+    if not latitude or not longitude:
+        return "Missing Latitude or Longitude", 400
+
+    # Add timestamp for easier tracking
+    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+    data = f"{timestamp} → Latitude={latitude}, Longitude={longitude}"
+
+    # Save to file
     with open(DATA_FILE, "w") as f:
         f.write(data)
-    print("Received data:", data)  # This still goes to the logs
+
+    # Also print to server logs
+    print("Received data:", data)
+
     return "Data received", 200
 
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 8080))
+    # Run on all interfaces for Render
     app.run(host="0.0.0.0", port=port)
