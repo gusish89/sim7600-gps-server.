@@ -2,15 +2,17 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET"])
 def home():
-    if request.method == "POST":
-        data = request.data.decode("utf-8")
-        print("Received:", data)
-        return "OK", 200
-    return "Hello Gustav your kinda cool!", 200
+    return "Hello from Flask!", 200
 
+@app.route("/data", methods=["POST"])
+def receive_data():
+    data = request.data.decode("utf-8")
+    print("Received data:", data)
+    return "Data received", 200
 
 if __name__ == "__main__":
-    # Force Flask to use port 8080 (or any other you want)
-    app.run(host="0.0.0.0", port=8080)
+    import os
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
